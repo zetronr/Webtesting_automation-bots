@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Case List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f4c542;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .navbar h2 {
+            margin: 0 auto;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Tombol Navigasi */
+        .add-button, .testcase-button, .actionlist-button {
+            position: absolute;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s ease-in-out;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-button { left: 20px; background-color: RGB(0, 72, 144); }
+        .actionlist-button { left: 180px; background-color: RGB(0, 72, 144); }
+        .testcase-button { left: 310px; background-color: rgb(184, 20, 20); }
+
+        .add-button:hover, .actionlist-button:hover, .testcase-button:hover {
+            background-color: rgb(150, 20, 20);
+            box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
+        }
+.addtc-button {
+    position: fixed; /* Tetap di posisi saat discroll */
+    bottom: 20px; /* Jarak dari bawah */
+    right: 20px; /* Jarak dari kanan */
+    background-color: RGB(0, 72, 144); /* Warna biru */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    transition: 0.3s ease-in-out;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1100; /* Pastikan tombol selalu tampil di atas elemen lain */
+}
+
+.addtc-button:hover {
+    background-color: rgb(184, 20, 20); /* Warna saat hover */
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
+}
+        /* Container */
+        .container {
+            margin-top: 90px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Tabel Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4c542;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Warna belang-belang */
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        /* Tombol Edit & Hapus */
+        .btn-edit, .btn-delete {
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            color: white;
+        }
+
+        .btn-edit { background: RGB(0, 72, 144); }
+        .btn-delete { background: rgb(184, 20, 20); }
+
+        .btn-edit:hover, .btn-delete:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h2>JUDUL</h2>
+        <a href="/add-action" class="add-button">Add new action</a>
+        <a href="/action-list" class="actionlist-button">Action List</a>
+        <a href="/testcase-list" class="testcase-button">Test Case Lists</a>
+    </div>
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama Test Case</th>
+                    <th>Status</th>
+                    <th>Waktu Eksekusi</th>
+                    <th>Hasil</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>TC01</td>
+                    <td>Login User Valid</td>
+                    <td>Selesai</td>
+                    <td>2025-03-19 10:00</td>
+                    <td><span style="color:green; font-weight: bold;">✅</span></td>
+                    <td>
+                        <a href="#" class="btn-edit">✏️</a>
+                        <a href="#" class="btn-delete">🗑️</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>TC02</td>
+                    <td>Login User Invalid</td>
+                    <td>Selesai</td>
+                    <td>2025-03-19 10:05</td>
+                    <td><span style="color:red; font-weight: bold;">❌</span></td>
+                    <td>
+                        <a href="#" class="btn-edit">✏️</a>
+                        <a href="#" class="btn-delete">🗑️</a>
+                    </td>
+                 </tr>
+            </tbody>
+        </table>
+    </div>
+<a href="/newtestcase" class="addtc-button">Add New Test Case</a>
+</body>
+</html>

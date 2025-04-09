@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Action</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='edit_action.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/action-list" class="add-button">Back to Action List</a>
+        <h2>JUDUL</h2>
+    </div>
+
+    <div class="container">
+        <h1>Edit Action</h1>
+        <form id="editActionForm" action="{{ url_for('edit_action', action_id=action.id) }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="action-name">Action Name:</label>
+                <input type="text" id="action-name" name="action_name" value="{{ action.action_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="xpath">XPath:</label>
+                <input type="text" id="xpath" name="xpath" value="{{ action.xpath }}">
+            </div>
+
+            <div class="form-group">
+                <label for="action">Choose Action Type:</label>
+                <select id="action" name="action_type" required>
+                    <option value="go-to" {% if action.action_type == 'go-to' %}selected{% endif %}>Link URL</option>
+                    <option value="insert" {% if action.action_type == 'insert' %}selected{% endif %}>Insert</option>
+                    <option value="click" {% if action.action_type == 'click' %}selected{% endif %}>Click</option>
+                    <option value="dropdown" {% if action.action_type == 'dropdown' %}selected{% endif %}>Select Dropdown</option>
+                    <option value="insert_file" {% if action.action_type == 'insert_file' %}selected{% endif %}>Insert File</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="url">URL:</label>
+                <input type="url" id="url" name="url" value="{{ action.url }}">
+            </div>
+
+            <div class="form-group">
+                <label for="insert">Insert Value:</label>
+                <input type="text" id="insert" name="insert" value="{{ action.insert_value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="insertfile">Upload File:</label>
+                <input type="file" id="insertfile" name="insertfile" accept="image/*, .pdf, .doc, .docx">
+            </div>
+
+            <div class="form-group">
+                <label for="dropdown-methode">Dropdown Methode:</label>
+                <select id="dropdown-methode" name="methode">
+                    <option value="">-- Choose Methode --</option>
+                    <option value="text" {% if action.methode == 'text' %}selected{% endif %}>By Text</option>
+                    <option value="index" {% if action.methode == 'index' %}selected{% endif %}>By Index</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="bytext">Text:</label>
+                <input type="text" id="bytext" name="bytext" value="{{ action.bytext }}">
+            </div>
+
+            <div class="form-group">
+                <label for="byindex">Index:</label>
+                <input type="number" id="byindex" name="byindex" value="{{ action.byindex }}">
+            </div>
+
+            <button type="submit">Update Action</button>
+        </form>
+    </div>
+    
+    <script src="{{ url_for('static', filename='form-handler.js') }}"></script>
+</body>
+</html>

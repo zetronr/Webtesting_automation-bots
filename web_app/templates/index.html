@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Automation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <h2>JUDUL</h2>
+        <a href="/add-action" class="add-button">Add new action</a>
+        <a href="/action-list" class="actionlist-button">Action List</a>
+        <a href="testcase-list" class="testcase-button">Test Case Lists</a>
+    </div>
+    
+
+    <div class="container">
+        <h1>BOT ACTION</h1>
+        <form id="actionForm">
+            <div class="form-group">
+                <label for="action-name">Action Name:</label>
+                <input type="text" id="action-name" name="action_name" placeholder="Masukan nama action" required>
+            </div>
+            <div class="form-group">
+                <label for="xpath">Xpath:</label>
+                <input type="text" id="xpath" name="xpath" placeholder="Masukan Xpath Element">
+            </div>
+            <div class="form-group">
+                <label for="action">Choose Action Type:</label>
+                <select id="action" name="action_type" required>
+                    <option value="">-- Choose Action Type --</option>
+                    <option value="go-to">Link URL</option>
+                    <option value="insert">Insert</option>
+                    <option value="click">Click</option>
+                    <option value="dropdown">Select Dropdown</option>
+                    <option value="insert_file">Insert File</option>
+                </select>
+            </div>
+
+            <!-- Input URL (Muncul jika memilih "go-to") -->
+            <div class="form-group hidden" id="url-group">
+                <label for="url">Enter URL:</label>
+                <input type="url" id="url" name="url" placeholder="Contoh: http://0.0.0.0/login">
+            </div>
+
+            <div class="form-group hidden" id="insert-group">
+                <label for="insert">Type Input Text:</label>
+                <input type="insert" id="insert" name="insert" placeholder="Masukan Apa yang Ingin di Input">
+            </div>  
+
+            <div class="form-group hidden" id="insertfile-group">
+                <label for="insertfile">Upload File:</label>
+                <input type="file" id="insertfile" name="insertfile" accept="image/*, .pdf, .doc, .docx, .xls, .xlsx">
+            </div>
+
+            <!-- Input Dropdown Options (Muncul jika memilih "dropdown") -->
+            <div class="form-group hidden" id="dropdown-options-group">
+                <label for="dropdown-methode">Dropdown Methode:</label>
+                <select id="dropdown-methode" name="methode" >
+                    <option value="">-- Choose Action Type --</option>
+                    <option value="text">By Text</option>
+                    <option value="index">By Index</option>
+                    </select>
+            </div>
+            <div class="form-group hidden" id="Bytext-group">
+                <label for="bytext">Masukan Text:</label>
+                <input type="bytext" id="bytext" name="bytext" placeholder="Masukan text"  >
+            </div>
+
+            <div class="form-group hidden" id="Byindex-group">
+                <label for="byindex">Masukan Index:</label>
+                <input type="number" id="byindex" name="byindex" placeholder="Masukan index" >
+            </div>
+            <button type="submit">Add Action</button>
+        </form>
+    </div>
+    <!-- Pesan sukses setelah submit -->
+    <div id="success-message" class="hidden success-message">✅ Action berhasil ditambahkan!</div>
+
+    
+    <!-- Tambahkan file JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

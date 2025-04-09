@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLITE DASH (Action List)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2 class="table-h2">List of Actions</h2>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Action Name</th>
+            <th>XPath</th>
+            <th>Type</th>
+            <th>Insert Value</th>
+            <th>URL</th>
+            <th>File Path</th>
+            <th>Dropdown Methode</th>
+            <th>Text</th>
+            <th>Index</th>
+        </tr>
+        {% for action in actions %}
+        <tr>
+            <td>{{ action[0] }}</td>
+            <td>{{ action[1] }}</td>
+            <td>{{ action[2] }}</td>
+            <td>{{ action[3] }}</td>
+            <td>{{ action[5] }}</td>
+            <td>{{ action[4] }}</td>
+            <td>{{ action[6] }}</td>
+            <td>{{ action[7] }}</td>
+            <td>{{ action[8] }}</td>
+            <td>{{ action[9] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    
+</body>
+</html>

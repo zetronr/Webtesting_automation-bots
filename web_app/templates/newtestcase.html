@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='newtestcase.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/testcase-list" class="add-button">Back</a>
+        <h2>JUDUL</h2>
+    </div>
+
+    <div class="container">
+        <h1>New Test Case</h1>
+        <form id="formtestcase">
+            <div class="form-group">
+                <label for="testcase-name">Test Case Name:</label>
+                <input type="text" id="testcase-name" name="testcase_name" placeholder="Masukan Judul Test Case" required>
+                <button id="plusbutton" class="plusbutton">+</button>
+            </div>
+        <h3>Selected action: </h3>
+        <ul id="action-list"></ul>
+       
+        </form>   
+            <form>  
+            <div class="form-group hidden" id="dropdown-options-group">
+                <label for="dropdown-methode">Action:</label>
+                <select id="dropdown-methode" name="methode" >
+                    <option value="">-- Choose Action --</option>
+                    {% for action in actions %}
+                    <option value="{{ action[0] }}">{{ action[1] }}</option>
+                    {% endfor %}
+                    <option value="pause">Pause</option>
+                    </select>
+            <button id="addactionbutton" class="addactionbutton">Add Action</button>
+            <button id="cancelbutton" class="cancelbutton">Cancel</button>
+            
+            </div>
+            </form>
+    <button type="submit" class="savebutton" id="savebutton">Save Test Case</button>   
+
+
+
+
+
+
+    </div>
+<script src="{{ url_for('static', filename='newtestcase.js') }}"></script>   
+</body>
+</html>
