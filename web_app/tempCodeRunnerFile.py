@@ -1,1 +1,1 @@
-/testcase-list
+tc.executeTc(self=tc,testcase=testcaseName)

@@ -9,31 +9,41 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("formtestcase");
     let actionIndex = 1; // Untuk urutan tampilan daftar aksi
 
-submitButton.addEventListener("click", function(event){
+    submitButton.addEventListener("click", function(event) {
         event.preventDefault();
         const testcaseName = form.querySelector('input[name="testcase_name"]').value;
         const actions = [];
-        document.querySelectorAll(".action-item").forEach(item => {
-        const text = item.querySelector(".action-text").textContent;
-        const match = text.match(/Action \d+: (.+) \(ID DB: (\d+)\)/);
-        if (match) {
-            actions.push({ id: match[2], name: match[1] });
+    
+    
+        const validTestcaseName = /^[a-zA-Z0-9_-]+$/.test(testcaseName); 
+        if (!validTestcaseName) {
+            alert("Nama testcase tidak boleh mengandung spasi atau karakter khusus.");
+            return;
         }
-    });
-    if (testcaseName === "") {
-        alert("Nama test case tidak boleh kosong.");
-        return;
-    }
-
-    if (actions.length < 1) {
-        alert("Minimal harus ada satu action.");
-        return;
-    }
+    
+        document.querySelectorAll(".action-item").forEach(item => {
+            const text = item.querySelector(".action-text").textContent;
+            const match = text.match(/Action \d+: (.+) \(ID DB: (\d+)\)/);
+            if (match) {
+                actions.push({ id: match[2], name: match[1] });
+            }
+        });
+    
+        if (testcaseName === "") {
+            alert("Nama test case tidak boleh kosong.");
+            return;
+        }
+    
+        if (actions.length < 1) {
+            alert("Minimal harus ada satu action.");
+            return;
+        }
+    
         const payLoad = {
             testcase_name: testcaseName,
             actions: actions
         };
-        
+    
         fetch("/submit_testcase", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

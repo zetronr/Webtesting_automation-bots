@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <div id="status">Connecting...</div>
+    <div>
+        <button onclick="sendMessage()">Send Message</button>
+    </div>
+    <div id="messages">
+        <!-- Pesan akan muncul di sini -->
+    </div>
+
+    <script>
+        // Membuat koneksi WebSocket ke server
+        const socket = new WebSocket('ws://localhost:8765');
+
+        // Mengatur event handler untuk event 'open' (ketika koneksi berhasil dibuka)
+        socket.addEventListener('open', function (event) {
+            document.getElementById("status").textContent = 'Connected to WebSocket server';
+            console.log("Connected to WebSocket server");
+        });
+
+        // Mengatur event handler untuk event 'message' (ketika menerima pesan)
+        socket.addEventListener('message', function (event) {
+            const messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML += `<p>Received: ${event.data}</p>`;
+        });
+
+        // Mengatur event handler untuk event 'close' (ketika koneksi ditutup)
+        socket.addEventListener('close', function (event) {
+            document.getElementById("status").textContent = 'Disconnected from WebSocket server';
+            console.log("Disconnected from WebSocket server");
+        });
+
+        // Mengatur event handler untuk event 'error' (jika ada kesalahan)
+        socket.addEventListener('error', function (event) {
+            console.error('WebSocket error:', event);
+        });
+
+        // Fungsi untuk mengirim pesan ke server
+        function sendMessage() {
+            const message = "Hello from the client!";
+            console.log("Sending:", message);
+            socket.send(message);
+        }
+    </script>
+</body>
+</html>

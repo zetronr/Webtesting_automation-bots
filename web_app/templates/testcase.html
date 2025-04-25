@@ -114,7 +114,7 @@
         }
 
         /* Tombol Edit & Hapus */
-        .btn-edit, .btn-delete {
+        .btn-edit, .btn-delete, .btn-exc {
             padding: 5px 10px;
             border-radius: 4px;
             text-decoration: none;
@@ -124,8 +124,9 @@
 
         .btn-edit { background: RGB(0, 72, 144); }
         .btn-delete { background: rgb(184, 20, 20); }
+        .btn-exc {background-color: rgb(0, 250, 0);}
 
-        .btn-edit:hover, .btn-delete:hover {
+        .btn-edit:hover, .btn-delete:hover, .btn-exc:hover {
             opacity: 0.8;
         }
     </style>
@@ -143,40 +144,33 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>No.</th>
                     <th>Nama Test Case</th>
-                    <th>Status</th>
+                    <th>Log</th>
                     <th>Waktu Eksekusi</th>
                     <th>Hasil</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
+                {% for action in actions %}
                 <tr>
-                    <td>TC01</td>
-                    <td>Login User Valid</td>
-                    <td>Selesai</td>
+                    <td>{{ '%02d' % loop.index }}</td>
+                    <td>{{ action[0].replace('tc_', '') }}</td>
+                    <td id="logTc"></td>
                     <td>2025-03-19 10:00</td>
                     <td><span style="color:green; font-weight: bold;">✅</span></td>
                     <td>
-                        <a href="#" class="btn-edit">✏️</a>
-                        <a href="#" class="btn-delete">🗑️</a>
+                        <a href="/edit-testcase/{{ action[0]| urlencode }}" class="btn-edit">✏️</a>
+                        <button type="button" class="btn-delete" data-name="{{ action[0] }}">🗑️</button>
+                        <button type="button" class="btn-exc" data-name="{{ action[0] }}">Execute</button>
                     </td>
                 </tr>
-                <tr>
-                    <td>TC02</td>
-                    <td>Login User Invalid</td>
-                    <td>Selesai</td>
-                    <td>2025-03-19 10:05</td>
-                    <td><span style="color:red; font-weight: bold;">❌</span></td>
-                    <td>
-                        <a href="#" class="btn-edit">✏️</a>
-                        <a href="#" class="btn-delete">🗑️</a>
-                    </td>
-                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
 <a href="/newtestcase" class="addtc-button">Add New Test Case</a>
+<script src="{{ url_for('static', filename='tcList.js') }}"></script>   
 </body>
 </html>

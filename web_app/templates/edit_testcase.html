@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='newtestcase.css') }}">
+</head>
+<body>
+    <meta name="table-name" content="{{ tcName }}">
+    <div class="navbar">
+        <a href="/testcase-list" class="add-button">Back</a>
+        <h2>JUDUL</h2>
+    </div>
+
+    <div class="container">
+        <h1>Edit Test Case</h1>
+        <form id="formtestcase">
+            <div class="form-group">
+                <label for="testcase-name">Test Case Name:</label>
+                <p id="testcase-name" name="testcase_name">  {{tcName.replace('tc_', '')}} </p>
+                <button id="plusbutton" class="plusbutton">+</button>
+            </div>
+        <h3>Selected action: </h3>
+        <ul id="action-list"></ul>
+       
+        </form>   
+            <form>  
+            <div class="form-group hidden" id="dropdown-options-group">
+                <label for="dropdown-methode">Action:</label>
+                <p id="indexAction"></p>
+                <select id="dropdown-methode" name="methode" >
+                    <option value="">-- Choose Action --</option>
+                    {% for action in actions %}
+                    <option value="{{ action[0] }}">{{ action[1] }}</option>
+                    {% endfor %}
+                    <option value="pause">Pause</option>
+                    </select>
+            <button id="addactionbutton" class="addactionbutton">Add Action</button>
+            <button id="scbutton" class="addactionbutton hidden">Save Changes</button>
+            <button id="cancelbutton" class="cancelbutton">Cancel</button>
+            
+            </div>
+            </form>
+    <button type="button" class="savebutton" id="savebutton">Save Changes</button>   
+    
+    <ul id="action-list"></ul>
+    </div>
+<script src="{{ url_for('static', filename='editTestcase.js') }}"></script>   
+</body>
+</html>

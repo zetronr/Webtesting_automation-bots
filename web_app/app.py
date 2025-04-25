@@ -1,16 +1,33 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for
+from bot_driver import testCase_exc
+import tkinter as tk
+import webbrowser
 import sqlite3
 import os
+import json
+import re
+
+# import tensorflow as tf
+
+# interpreter = tf.lite.Interpreter(
+#     model_path="model.tflite",
+#     experimental_delegates=[]
+# )
+# interpreter.allocate_tensors()
+
+tc = testCase_exc
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
+
 def create_testcase_table(tc_name):
     conn = sqlite3.connect("bot_actions.db")
     cursor = conn.cursor()
 
-    # Table name must be sanitized if input comes from user
+    
     query = f'''
         CREATE TABLE IF NOT EXISTS "{tc_name}" (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,6 +56,15 @@ def get_actions():
     conn.close()
     return rows
 
+
+def get_testcase():
+    conn = sqlite3.connect("bot_actions.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'Tc\_%' ESCAPE '\\';")
+    tables = cursor.fetchall()
+    conn.close()
+    return tables
+
 def get_actionname():
     conn = sqlite3.connect("bot_actions.db")
     cursor = conn.cursor()
@@ -48,7 +74,7 @@ def get_actionname():
     return rows
 
 def get_db_connection():
-    conn = sqlite3.connect("bot_actions.db")  # Gunakan bot_actions.db di sini juga
+    conn = sqlite3.connect("bot_actions.db")  
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -61,7 +87,8 @@ def list_actions():
 
 @app.route('/testcase-list')
 def test_case():
-    return render_template('testcase.html')
+    dataTc = get_testcase()
+    return render_template('testcase.html',actions = dataTc )
 
 @app.route('/newtestcase')
 def newtest_case():
@@ -69,6 +96,27 @@ def newtest_case():
     return render_template('newtestcase.html',actions = data)
 
 
+
+@app.route('/delete-testcase/<tableName>',methods=["POST"])
+def delete_testcase(tableName):
+    try: 
+        conn = sqlite3.connect("bot_actions.db")
+        cursor = conn.cursor()
+        cursor.execute(f"DROP TABLE IF EXISTS [{tableName}]")  # aman terhadap nama dengan spasi/karakter khusus
+        conn.commit()
+        conn.close()
+        return jsonify(success=True)
+    except Exception as e:
+        return jsonify(success=False, error=str(e))
+
+@app.route('/execute-testcase/<testcaseName>',methods=["POST"])
+def executeTestcase(testcaseName):
+    try:
+        tc.executeTc(self=tc,testcase=testcaseName)
+        return jsonify(success = True)
+    except Exception as e:
+        return str(e), 500
+    
 @app.route("/delete-action/<int:action_id>", methods=["POST"])
 def delete_action(action_id):
     try:
@@ -87,6 +135,10 @@ def delete_action(action_id):
 @app.route("/add-action")
 def index():
     return render_template("index.html")
+
+@app.route("/logsaction")
+def logs():
+    return render_template("aduh.html")
 
 @app.route('/static/<path:filename>')
 def static_files(filename):
@@ -167,6 +219,75 @@ def submit():
 def download_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename, as_attachment=True)
 
+@app.route("/edit-testcase/<tableName>", methods = ["GET","POST"])
+def edit_testcase(tableName):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    data = get_actionname()
+
+    try:
+        cursor.execute(f'SELECT action_id FROM "{tableName}"')
+        rows = cursor.fetchall()
+        actionIdList = [row["action_id"] for row in rows]
+  # List of selected action IDs
+    except Exception as e:
+        conn.close()
+        return f"Error membaca tabel {tableName}: {e}", 500
+
+        conn.close()
+
+    return render_template(
+    "edit_testcase.html",
+    tcName=tableName,
+    actions=data
+)
+
+@app.route("/table-data/<tableName>",methods = ["GET"])
+def send_tabledata(tableName):
+   conn = get_db_connection()
+   cursor = conn.cursor() 
+   try:
+        cursor.execute(f'SELECT action_id FROM "{tableName}"')
+        rows = cursor.fetchall()
+        actionIdList = [row["action_id"] for row in rows]
+        detailedActions = [getActioninfo(action_id) for action_id in actionIdList]
+ 
+   except Exception as e:
+        conn.close()
+        return f"Error membaca tabel {tableName}: {e}", 500
+        conn.close()
+
+   return jsonify(detailedActions)
+
+
+
+    
+def getActioninfo(actionID):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM actions WHERE id = ?", (actionID,))   
+    row = cursor.fetchone()
+    conn.close() 
+
+    if row:
+        
+        return {
+            "id": row["id"],
+            "name": row["action_name"],
+            "xpath": row["xpath"],
+            "type": row["action_type"],
+            "url": row["url"],
+            "inset_value": row["insert_value"],
+            "insert_file": row["insert_file"],
+            "methode": row["methode"],
+            "bytext": row["bytext"],
+            "byindex": row["byindex"]
+        }
+    else:
+        return None
+   
+
 @app.route("/edit-action/<int:action_id>", methods=["GET", "POST"])
 def edit_action(action_id):
     conn = get_db_connection()
@@ -203,6 +324,46 @@ def edit_action(action_id):
         return render_template("edit_action.html", action=action)
     else:
         return jsonify({"error": "Action not found"}), 404
+    
+@app.route('/update-testcase/<table_name>', methods=['POST'])
+def update_testcase(table_name):
+    data = request.get_json()
+    actions = data.get('actions', [])
+
+    if not re.match(r'^[a-zA-Z0-9_]+$', table_name):
+        return jsonify({"success": False, "message": "Invalid table name"}), 400
+
+    try:
+        with sqlite3.connect("bot_actions.db", timeout=10) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'DELETE FROM "{table_name}"')
+
+            for action in actions:
+                cursor.execute(f'''
+                    INSERT INTO "{table_name}" (action_id)
+                    VALUES (?)
+                ''', (action['id'],))
+
+            conn.commit()
+
+        return jsonify({"success": True, "message": "Test case updated"})
+
+    except sqlite3.OperationalError as e:
+        if "database is locked" in str(e):
+            return jsonify({"success": False, "message": "Database is currently locked. Please try again shortly."}), 500
+        return jsonify({"success": False, "message": f"Database error: {str(e)}"}), 500
+
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Unexpected error: {str(e)}"}), 500
+    
+def open_url():
+    webbrowser.open("http://127.0.0.1:5000/action-list")  
+
+open_url()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False, use_reloader=False)
+
+
+
+
