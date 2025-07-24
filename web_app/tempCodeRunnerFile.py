@@ -1,1 +1,1 @@
-tc.executeTc(self=tc,testcase=testcaseName)
+TEXT NOT NULL

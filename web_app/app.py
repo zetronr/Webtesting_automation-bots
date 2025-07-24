@@ -22,7 +22,6 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-
 def create_testcase_table(tc_name):
     conn = sqlite3.connect("bot_actions.db")
     cursor = conn.cursor()
@@ -80,6 +79,7 @@ def get_db_connection():
 
 @app.route('/action-list')
 def list_actions():
+    print("route action list clicked")
     conn = get_db_connection()
     actions = conn.execute("SELECT * FROM actions").fetchall()
     conn.close()
@@ -109,14 +109,35 @@ def delete_testcase(tableName):
     except Exception as e:
         return jsonify(success=False, error=str(e))
 
+# @app.route('/execute-testcase/<testcaseName>',methods=["POST"])
+# def executeTestcase(testcaseName):
+#     try:
+#         tc.executeTc(self=tc,testcase=testcaseName)
+#         return jsonify(success = True)
+#     except Exception as e:
+#         return str(e), 500
+    
+
+
 @app.route('/execute-testcase/<testcaseName>',methods=["POST"])
 def executeTestcase(testcaseName):
+    print(f"DEBUG: Menerima permintaan untuk mengeksekusi test case: {testcaseName}")
     try:
-        tc.executeTc(self=tc,testcase=testcaseName)
-        return jsonify(success = True)
+        
+        success, message = tc.executeTc(self=tc,testcase=testcaseName)
+
+        if success:
+            print(f"DEBUG: Eksekusi test case '{testcaseName}' berhasil. Pesan: {message}")
+            return jsonify(success=True, message=message)
+        else:
+            print(f"ERROR: Eksekusi test case '{testcaseName}' GAGAL. Pesan: {message}")
+            return jsonify(success=False, error=message), 500 
     except Exception as e:
-        return str(e), 500
-    
+       
+        print(f"CRITICAL ERROR di Flask route: {e}")
+        return jsonify(success=False, error=f"Kesalahan internal server: {str(e)}"), 500
+
+
 @app.route("/delete-action/<int:action_id>", methods=["POST"])
 def delete_action(action_id):
     try:
@@ -152,7 +173,7 @@ def show_actions():
 @app.route("/submit_testcase", methods=["POST"])
 def submit_testcase():
     data = request.get_json()
-
+      
     if not data:
         return jsonify({"status": "error", "message": "Data JSON tidak ditemukan."}), 400
 
@@ -181,9 +202,13 @@ def submit_testcase():
     }), 200
 
 
-
 @app.route("/submit", methods=["POST"])
 def submit():
+    # Print all form data received
+    print("--- DEBUG: /submit POST Request Received ---")
+    print(f"DEBUG: Form Data: {request.form}")
+    print(f"DEBUG: Files Data: {request.files}")
+
     action_name = request.form.get("action_name")
     xpath = request.form.get("xpath")
     action_type = request.form.get("action_type")
@@ -193,26 +218,52 @@ def submit():
     bytext = request.form.get("bytext", None)
     byindex = request.form.get("byindex", None)
 
+    # Print extracted values
+    print(f"DEBUG: action_name: {action_name}")
+    print(f"DEBUG: xpath: {xpath}")
+    print(f"DEBUG: action_type: {action_type}")
+    print(f"DEBUG: url: {url}")
+    print(f"DEBUG: insert_value: {insert_value}")
+    print(f"DEBUG: methode: {methode}")
+    print(f"DEBUG: bytext: {bytext}")
+    print(f"DEBUG: byindex: {byindex}")
+
     file = request.files.get("insertfile")
     file_path = None
 
     if file:
-        file_path = os.path.join(UPLOAD_FOLDER, file.filename)  # Simpan path file
-        file.save(file_path)  # Simpan file di folder uploads
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        try:
+            file.save(file_path)
+            print(f"DEBUG: File saved successfully to: {file_path}")
+        except Exception as e:
+            print(f"ERROR: Failed to save file: {e}")
+            return jsonify({"error": f"Gagal menyimpan file: {str(e)}"}), 500
+    else:
+        print("DEBUG: No file uploaded.")
 
     try:
         conn = get_db_connection()
+        # Print the values being inserted
+        print(f"DEBUG: Attempting to insert into 'actions' table with values:")
+        print(f"DEBUG: action_name={action_name}, xpath={xpath}, action_type={action_type}, url={url}, insert_value={insert_value}, insert_file={file_path}, methode={methode}, bytext={bytext}, byindex={byindex}")
+
         conn.execute("""
             INSERT INTO actions (action_name, xpath, action_type, url, insert_value, insert_file, methode, bytext, byindex) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (action_name, xpath, action_type, url, insert_value, file_path, methode, bytext, byindex))
         conn.commit()
         conn.close()
+        print("DEBUG: Data successfully committed to database.")
 
         return jsonify({"message": "Data berhasil disimpan ke database!"})
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except sqlite3.Error as e: # Catch specific SQLite errors
+        print(f"ERROR: SQLite Database Error: {e}")
+        return jsonify({"error": f"Kesalahan database: {str(e)}"}), 500
+    except Exception as e: # Catch any other unexpected errors
+        print(f"ERROR: Unexpected Error during submission: {e}")
+        return jsonify({"error": f"Terjadi kesalahan tak terduga: {str(e)}"}), 500
 
 #Route untuk Mengunduh File dari Folder
 @app.route('/download/<path:filename>')
@@ -357,12 +408,12 @@ def update_testcase(table_name):
         return jsonify({"success": False, "message": f"Unexpected error: {str(e)}"}), 500
     
 def open_url():
-    webbrowser.open("http://127.0.0.1:5000/action-list")  
+    webbrowser.open("http://127.0.0.1:5000/add-action")  
 
-open_url()
+
 
 if __name__ == "__main__":
-    app.run(debug=False, use_reloader=False)
+    app.run(debug=True, use_reloader=False)
 
 
 

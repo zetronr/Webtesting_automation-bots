@@ -56,26 +56,26 @@
             background-color: rgb(150, 20, 20);
             box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
         }
-.addtc-button {
-    position: fixed; /* Tetap di posisi saat discroll */
-    bottom: 20px; /* Jarak dari bawah */
-    right: 20px; /* Jarak dari kanan */
-    background-color: RGB(0, 72, 144); /* Warna biru */
-    color: white;
-    padding: 12px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 16px;
-    transition: 0.3s ease-in-out;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1100; /* Pastikan tombol selalu tampil di atas elemen lain */
-}
+        .addtc-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: RGB(0, 72, 144);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: 0.3s ease-in-out;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1100;
+        }
 
-.addtc-button:hover {
-    background-color: rgb(184, 20, 20); /* Warna saat hover */
-    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
-}
+        .addtc-button:hover {
+            background-color: rgb(184, 20, 20);
+            box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
+        }
         /* Container */
         .container {
             margin-top: 90px;
@@ -129,6 +129,48 @@
         .btn-edit:hover, .btn-delete:hover, .btn-exc:hover {
             opacity: 0.8;
         }
+
+        /* Styling for Log Container */
+        #log-section {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        #log-output-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            background-color: #f9f9f9;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+            font-family: monospace; /* Monospace font for better log readability */
+            font-size: 0.9em;
+            /* Default state: hidden or shown */
+            display: none; /* Mulai dengan log tersembunyi */
+        }
+
+        .log-info { color: #333; }
+        .log-success { color: green; font-weight: bold; }
+        .log-warning { color: orange; }
+        .log-error { color: red; font-weight: bold; }
+        .log-debug { color: #888; } /* Add debug log style */
+
+        /* Tombol Toggle Log */
+        #toggle-log-button {
+            background-color: #007bff; /* Warna biru */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px; /* Jarak antara tombol dan log container */
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        #toggle-log-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -146,20 +188,18 @@
                 <tr>
                     <th>No.</th>
                     <th>Nama Test Case</th>
-                    <th>Log</th>
-                    <th>Waktu Eksekusi</th>
-                    <th>Hasil</th>
+                    <th>Waktu Eksekusi Terakhir</th>
+                    <th>Hasil Terakhir</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 {% for action in actions %}
-                <tr>
+                <tr id="testcase-{{ action[0] }}">
                     <td>{{ '%02d' % loop.index }}</td>
-                    <td>{{ action[0].replace('tc_', '') }}</td>
-                    <td id="logTc"></td>
-                    <td>2025-03-19 10:00</td>
-                    <td><span style="color:green; font-weight: bold;">✅</span></td>
+                    <td class="testcase-name-cell" data-full-name="{{ action[0] }}">{{ action[0].replace('tc_', '') }}</td>
+                    <td class="testcase-last-execution-time">N/A</td>
+                    <td class="testcase-last-result">N/A</td>
                     <td>
                         <a href="/edit-testcase/{{ action[0]| urlencode }}" class="btn-edit">✏️</a>
                         <button type="button" class="btn-delete" data-name="{{ action[0] }}">🗑️</button>
@@ -169,8 +209,147 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <div id="log-section">
+            <h3>Log Eksekusi Test Case:</h3>
+            <button id="toggle-log-button">Tampilkan Log</button> <div id="log-output-container">
+                <p class="log-info">Log akan muncul di sini setelah test case dieksekusi.</p>
+            </div>
+        </div>
     </div>
 <a href="/newtestcase" class="addtc-button">Add New Test Case</a>
-<script src="{{ url_for('static', filename='tcList.js') }}"></script>   
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const deleteTestcaseButtons = document.querySelectorAll(".btn-delete");
+        const executeTestcaseButtons = document.querySelectorAll(".btn-exc");
+        const logOutputContainer = document.getElementById('log-output-container');
+        const toggleLogButton = document.getElementById('toggle-log-button');
+
+        // Fungsi pembantu untuk menambahkan log ke container
+        function appendLog(message, status = "info") {
+            const p = document.createElement('p');
+            const timestamp = new Date().toLocaleTimeString();
+            p.textContent = `[${timestamp}] ${message}`;
+            p.classList.add(`log-${status}`);
+            logOutputContainer.appendChild(p);
+            logOutputContainer.scrollTop = logOutputContainer.scrollHeight; // Auto-scroll ke bawah
+        }
+
+        // --- Event Listener untuk Toggle Log ---
+        toggleLogButton.addEventListener('click', function() {
+            if (logOutputContainer.style.display === 'none') {
+                logOutputContainer.style.display = 'block'; // Tampilkan
+                toggleLogButton.textContent = 'Sembunyikan Log';
+            } else {
+                logOutputContainer.style.display = 'none'; // Sembunyikan
+                toggleLogButton.textContent = 'Tampilkan Log';
+            }
+        });
+
+        // --- Delete Test Case (tetap sama) ---
+        deleteTestcaseButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                const tableName = this.getAttribute('data-name');
+                const displayTable = tableName.replace(/^tc_/i, '');
+                console.log("hapus", displayTable);
+                if (confirm(`Hapus test case: ${displayTable} ?`)) {
+                    fetch(`/delete-testcase/${tableName}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Tabel berhasil dihapus.');
+                            location.reload();
+                        } else {
+                            alert('Gagal menghapus tabel.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saat menghapus:', error);
+                        alert('Terjadi kesalahan saat menghapus test case.');
+                    });
+                }
+            });
+        });
+
+        // --- Execute Test Case ---
+        executeTestcaseButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                const testcaseName = this.getAttribute('data-name');
+                const displayTable = testcaseName.replace(/^tc_/i, '');
+                const rowElement = document.getElementById(`testcase-${testcaseName}`);
+
+                console.log("executing", testcaseName);
+                if (confirm(`Execute test case: ${displayTable} ?`)) {
+                    // Reset log container saat eksekusi baru dimulai
+                    logOutputContainer.innerHTML = '';
+                    appendLog(`Memulai eksekusi test case: ${displayTable}...`, 'info');
+
+                    // Pastikan kotak log terlihat saat eksekusi dimulai
+                    logOutputContainer.style.display = 'block';
+                    toggleLogButton.textContent = 'Sembunyikan Log';
+
+
+                    // Update waktu eksekusi dan status di tabel
+                    if (rowElement) {
+                        const timeCell = rowElement.querySelector('.testcase-last-execution-time');
+                        const resultCell = rowElement.querySelector('.testcase-last-result');
+                        const now = new Date();
+                        timeCell.textContent = now.toLocaleString();
+                        resultCell.innerHTML = '<span style="color: grey;">⏳ Berjalan...</span>';
+                    }
+
+                    fetch(`/execute-testcase/${testcaseName}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Setelah menerima respons dari server
+                        // Tampilkan semua log yang diterima dari server
+                        if (data.logs && Array.isArray(data.logs)) {
+                            data.logs.forEach(logEntry => {
+                                const parts = logEntry.match(/^\[(.*?)\]:\s*(.*)/);
+                                if (parts && parts.length === 3) {
+                                    let status = parts[1].toLowerCase();
+                                    if (status === 'critical error') status = 'error';
+                                    appendLog(parts[2], status);
+                                } else {
+                                    appendLog(logEntry, 'info');
+                                }
+                            });
+                        }
+                        
+                        // Perbarui status akhir dan pesan di tabel dan log
+                        if (data.success) {
+                            appendLog(`Test case "${displayTable}" berhasil dieksekusi.`, 'success');
+                            if (rowElement) {
+                                const resultCell = rowElement.querySelector('.testcase-last-result');
+                                resultCell.innerHTML = '<span style="color: green; font-weight: bold;">✅ Berhasil</span>';
+                            }
+                        } else {
+                            appendLog(`Eksekusi test case "${displayTable}" GAGAL: ${data.error}`, 'error');
+                            if (rowElement) {
+                                const resultCell = rowElement.querySelector('.testcase-last-result');
+                                resultCell.innerHTML = '<span style="color: red; font-weight: bold;">❌ Gagal</span>';
+                            }
+                            alert('Eksekusi gagal. Lihat log untuk detailnya.');
+                        }
+                    })
+                    .catch(error => {
+                        appendLog(`Error jaringan saat memanggil API: ${error}`, 'error');
+                        if (rowElement) {
+                            const resultCell = rowElement.querySelector('.testcase-last-result');
+                            resultCell.innerHTML = '<span style="color: red; font-weight: bold;">❌ Error</span>';
+                        }
+                        console.error('Error fetching:', error);
+                    });
+                }
+            });
+        });
+    });
+</script>
+
 </body>
 </html>
